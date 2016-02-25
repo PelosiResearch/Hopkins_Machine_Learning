@@ -1,0 +1,138 @@
+---
+title: "Coursera PLM Final"
+author: "Mike Pelosi"
+date: "February 24, 2016"
+output: html_document
+---
+
+**Background**
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+**Data**
+
+The training data for this project are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+**Introduction**
+
+This dataset consists of a training set (denoted trainingset) and a test set (denoted testting set). The training set consists of 19622 observations across 53 variables, and the testing set consists of 20 observations of 53 variables. The training set uses 75% of the original data, leaving the remaining 25% for cross validation.
+
+**More on Cross Validation**
+
+
+In order to develop cross-validation for the model, 75% of the training data was sampled from the supplied training data set. The testing set, which is 25% of the data, will be sampled from the supplied testing set. Thus, data is "trained" on the sampled training set and cross validated, or "tested" on the testing set.
+
+**Model Building and Methods**
+
+
+Multiple variables are used for predicting five distinct class variables. These are variables with various factors and practically correspond to a user lifting a dummbell in particular fashion.
+
+The models used will be decision trees and random forest algorithms. The predicted variable, "classe", is a factor variable. This factor variable is also unordered,and of large sample size, making decision tree and random forest modeling the most logical choices.
+
+**Data preprocessing**
+
+
+All data was imported directly from the supplied web sources, imported into memory, and cleaned. By cleaned I mean missing variables are first coded to NA, and then removed from the dataset. 
+From the predictor variables, the first seven columns are eliminated. These columns offer no predictive value since they are of indexing and date/time stamping levels. 
+
+**Model Success Hypothesis**
+
+
+I anticipate that the random forest algorithm will perform better than the decision tree classification algorithm. Therefore, the out of sample error (which uses the original data set labeled "trainingset" in the code) will be represented by 1-reported accuracy. Both algorithms provide a substantial amount of statistical reporting so that 1-accuracy can be easily calculated.
+
+###**Begin Code**
+
+
+**First, install all required packages**
+```{r}
+#Get all required libraries
+library(caret)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+```
+
+**Set Seed**
+```{r}
+#set seed
+set.seed(1234)
+```
+
+**Bring In Data and Clean Data**
+```{r}
+#Bring data in from supplied website
+trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+#Clean up the data by replacing all missing values with NA
+train <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))
+test <- read.csv(url(testUrl), na.strings=c("NA", "#DIV/0!", ""))
+ 
+#Now, delete all columns with missing values
+trainingset<-train[,colSums(is.na(train)) == 0]
+testingset <-test[,colSums(is.na(test)) == 0]
+
+#Remove columns 1:7 because they contain irrelevant data like timestamp and index
+trainingset<-trainingset[,-c(1:7)]
+testingset<-testingset[,-c(1:7)]
+```
+
+**Partition (sample) The Data from Supplied Data**
+```{r}
+#We will go with a 75% training and 25% testing sample
+sample<-createDataPartition(y=trainingset$classe, p=0.75, list=FALSE)
+sampletraining<-trainingset[sample,]
+sampletesting<-trainingset[-sample,]
+```
+
+**First Model: Random Forest**
+```{r}
+#First, Random Forest
+model_rf<-randomForest(classe~., data=sampletraining, method="class")
+prediction_rf<-predict(model_rf, sampletesting, type="class")
+
+#Now, check accuracy with confusion matrix
+confusionMatrix(prediction_rf, sampletesting$classe)
+```
+**Next Model: Decision / Classification Tree**
+```{r}
+#Next, decision tree
+model_dt <- rpart(classe ~ ., data=sampletraining, method="class")
+
+# Predicting:
+prediction_dt <- predict(model_dt, sampletesting, type = "class")
+
+#Check accuracy with confusion matrix 
+confusionMatrix(prediction_dt, sampletesting$classe)
+```
+**Next: Using The Random Forest Algorithm with Predictions for the Variable Classe**
+```{r}
+#Finally, we check class predictions 
+class_predictions<-predict(model_rf, testingset, type="class")
+
+#display class predictions
+class_predictions
+#100 percent of the predictions are correct using random forest
+```
+**Finally: Write the Program for Save File Submission**
+```{r}
+#Finally, save files for submissions
+mlp_write= function (x) {
+n=length(x)
+for(i in 1:n) {
+filename = paste0("problem_id",i,".txt")
+write.table(x[i], file=filename, quote=FALSE, row.names=FALSE, col.names=FALSE)
+}
+	}
+
+mlp_write(class_predictions)
+
+mlp_write
+```
+##**End Code**
