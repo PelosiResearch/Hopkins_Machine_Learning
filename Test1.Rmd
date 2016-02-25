@@ -78,15 +78,15 @@ test <- read.csv(url(testUrl), na.strings=c("NA", "#DIV/0!", ""))
 trainingset<-train[,colSums(is.na(train)) == 0]
 testingset <-test[,colSums(is.na(test)) == 0]
 
-#Remove columns 1:7 because they contain irrelevant data like timestamp and index
-trainingset<-trainingset[,-c(1:7)]
-testingset<-testingset[,-c(1:7)]
+#Remove columns 1:6 because they contain irrelevant data like timestamp and index
+trainingset<-trainingset[,-c(1:6)]
+testingset<-testingset[,-c(1:6)]
 ```
 
 **Partition (sample) The Data from Supplied Data**
 ```{r}
-#We will go with a 75% training and 25% testing sample
-sample<-createDataPartition(y=trainingset$classe, p=0.75, list=FALSE)
+#We will go with a 80% training and 20% testing sample
+sample<-createDataPartition(y=trainingset$classe, p=0.80, list=FALSE)
 sampletraining<-trainingset[sample,]
 sampletesting<-trainingset[-sample,]
 ```
