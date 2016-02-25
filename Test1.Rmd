@@ -120,6 +120,8 @@ class_predictions<-predict(model_rf, testingset, type="class")
 class_predictions
 #100 percent of the predictions are correct using random forest
 ```
+##**Results**
+As hypothesized, the random forest algorithm works much better than the decision / classification tree algorithm. The out of sample error rate is less than 1%
 **Finally: Write the Program for Save File Submission**
 ```{r}
 #Finally, save files for submissions
