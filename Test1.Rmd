@@ -49,7 +49,7 @@ I anticipate that the random forest algorithm will perform better than the decis
 ###**Begin Code**
 
 
-**First, install all required packages**
+**First, install all required packages and call into memory libraries**
 ```{r}
 #Get all required libraries
 library(caret)
